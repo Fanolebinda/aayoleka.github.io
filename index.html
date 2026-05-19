@@ -1,882 +1,512 @@
-// ============================================================
-// AyoLekaPortfolio.jsx — Framer-compatible React Component
-// Compatible: Framer, React 18, Tailwind (optionnel)
-// Animations: CSS transitions + IntersectionObserver (no framer-motion dep required)
-// ============================================================
-
-import { useState, useEffect, useRef, useCallback } from "react"
-
-// ─── Design Tokens ───────────────────────────────────────────
-const COLORS = {
-  orange: "#E87100",
-  orangeLight: "#FF9F45",
-  bg: "#0D0D0D",
-  bg2: "#1C1C1C",
-  text: "#EDEDED",
-  gray: "#D6D6D6",
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ayo Leka — Motion Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#E87100;
+  --orange-light:#FF9F45;
+  --bg:#0D0D0D;
+  --bg2:#1C1C1C;
+  --text:#EDEDED;
+  --gray:#D6D6D6;
+  --font:'Plus Jakarta Sans',sans-serif;
 }
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-// ─── Global Styles (injected once) ───────────────────────────
-const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.25rem 4rem;display:flex;align-items:center;justify-content:space-between;background:rgba(13,13,13,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(232,113,0,0.08)}
+.nav-logo{display:flex;align-items:center;gap:.6rem}
+.logo-icon{width:32px;height:32px;background:var(--orange);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.nav-brand{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{color:var(--gray);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--orange)}
+.nav-cta{background:var(--orange);color:#fff;border:none;padding:.55rem 1.4rem;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s,transform .2s;font-family:var(--font)}
+.nav-cta:hover{background:var(--orange-light);transform:scale(1.03)}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:8rem 4rem 4rem;position:relative;overflow:hidden}
+.hero-bg-line{position:absolute;top:0;right:0;width:45%;height:100%;background:linear-gradient(180deg,rgba(232,113,0,0.04) 0%,transparent 80%);pointer-events:none}
+.hero-dot{position:absolute;width:1px;height:1px;border-radius:50%;background:var(--orange);box-shadow:0 0 80px 40px rgba(232,113,0,0.07)}
+.hero-dot-1{top:20%;right:20%}
+.hero-dot-2{bottom:30%;right:45%}
+.hero-tag{display:inline-flex;align-items:center;gap:.5rem;background:rgba(232,113,0,0.1);border:1px solid rgba(232,113,0,0.2);color:var(--orange);padding:.35rem 1rem;border-radius:100px;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2rem}
+.hero-tag-dot{width:6px;height:6px;background:var(--orange);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.hero h1{font-size:clamp(2.8rem,6vw,5.5rem);font-weight:800;line-height:1.05;letter-spacing:-2px;max-width:900px;margin-bottom:1.75rem}
+.hero h1 span{color:var(--orange)}
+.hero-sub{font-size:1.1rem;color:var(--gray);max-width:500px;line-height:1.7;margin-bottom:3rem;font-weight:400}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{background:var(--orange);color:#fff;border:none;padding:.85rem 2.2rem;border-radius:100px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:background .2s,transform .15s;font-family:var(--font)}
+.btn-primary:hover{background:var(--orange-light);transform:translateY(-2px)}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid rgba(237,237,237,0.2);padding:.85rem 2.2rem;border-radius:100px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:border-color .2s,color .2s,transform .15s;font-family:var(--font)}
+.btn-secondary:hover{border-color:var(--orange);color:var(--orange);transform:translateY(-2px)}
+.hero-stats{display:flex;gap:3rem;margin-top:5rem;padding-top:2.5rem;border-top:1px solid rgba(237,237,237,0.08)}
+.stat-num{font-size:2rem;font-weight:800;color:var(--text);letter-spacing:-1px}
+.stat-num span{color:var(--orange)}
+.stat-label{font-size:12px;color:var(--gray);margin-top:.2rem;font-weight:500}
 
-  html { scroll-behavior: smooth; }
+/* SECTIONS */
+section{padding:7rem 4rem}
+.section-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);margin-bottom:1.2rem}
+.section-title{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:1.2rem}
+.section-sub{font-size:1rem;color:var(--gray);max-width:480px;line-height:1.7}
 
-  body {
-    background: #0D0D0D;
-    color: #EDEDED;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-  }
+/* ABOUT */
+.about{background:var(--bg2)}
+.about-inner{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center}
+.about-visual{position:relative;height:460px;background:#151515;border-radius:20px;overflow:hidden;border:1px solid rgba(232,113,0,0.1)}
+.about-visual-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(232,113,0,0.08) 0%,transparent 60%)}
+.about-img-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem}
+.about-av{width:96px;height:96px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff}
+.about-av-name{font-size:14px;color:var(--gray);font-weight:500}
+.about-badge{position:absolute;bottom:1.5rem;left:1.5rem;background:rgba(13,13,13,0.9);border:1px solid rgba(232,113,0,0.2);padding:.7rem 1.1rem;border-radius:12px;display:flex;align-items:center;gap:.6rem}
+.badge-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px rgba(34,197,94,0.5)}
+.badge-text{font-size:12px;color:var(--text);font-weight:600}
+.about-content h2{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:800;letter-spacing:-1px;margin-bottom:1.5rem;line-height:1.15}
+.about-content p{color:var(--gray);line-height:1.8;margin-bottom:1.2rem;font-size:.95rem}
+.about-skills{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:2rem}
+.skill-pill{background:rgba(232,113,0,0.08);border:1px solid rgba(232,113,0,0.15);color:var(--orange);padding:.4rem 1rem;border-radius:100px;font-size:12px;font-weight:600}
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: #0D0D0D; }
-  ::-webkit-scrollbar-thumb { background: #E87100; border-radius: 2px; }
+/* SERVICES */
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:4rem}
+.service-card{background:var(--bg2);border:1px solid rgba(237,237,237,0.06);border-radius:20px;padding:2.2rem;transition:border-color .3s,transform .3s,background .3s;cursor:default;position:relative;overflow:hidden}
+.service-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--orange);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.service-card:hover{border-color:rgba(232,113,0,0.2);transform:translateY(-6px);background:#1e1e1e}
+.service-card:hover::before{transform:scaleX(1)}
+.service-icon{width:48px;height:48px;background:rgba(232,113,0,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:1.5rem}
+.service-card h3{font-size:1.1rem;font-weight:700;margin-bottom:.75rem;letter-spacing:-.3px}
+.service-card p{font-size:.875rem;color:var(--gray);line-height:1.7}
 
-  /* Pulse animation */
-  @keyframes ayo-pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: .5; transform: scale(.8); }
-  }
+/* PORTFOLIO */
+.portfolio{background:var(--bg2)}
+.portfolio-filter{display:flex;gap:.75rem;margin-bottom:3rem;flex-wrap:wrap}
+.filter-btn{background:transparent;border:1px solid rgba(237,237,237,0.1);color:var(--gray);padding:.5rem 1.3rem;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.filter-btn.active,.filter-btn:hover{background:var(--orange);border-color:var(--orange);color:#fff}
+.portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.portfolio-card{background:#111;border-radius:16px;overflow:hidden;position:relative;aspect-ratio:16/10;cursor:pointer;border:1px solid rgba(237,237,237,0.05)}
+.portfolio-card-bg{position:absolute;inset:0;transition:transform .5s}
+.portfolio-card:hover .portfolio-card-bg{transform:scale(1.05)}
+.portfolio-card-content{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,transparent 50%);display:flex;flex-direction:column;justify-content:flex-end;padding:1.5rem;transform:translateY(10px);opacity:0;transition:all .3s}
+.portfolio-card:hover .portfolio-card-content{opacity:1;transform:translateY(0)}
+.pc-tag{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--orange);margin-bottom:.4rem}
+.pc-title{font-size:1rem;font-weight:700;color:#fff}
+.pc-colors{display:flex;gap:.5rem;margin-top:.75rem}
+.pc-c{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.2)}
+.pc-1{background:linear-gradient(135deg,#E87100,#FF9F45)}
+.pc-2{background:linear-gradient(135deg,#1a1a2e,#16213e)}
+.pc-3{background:linear-gradient(135deg,#0f3460,#533483)}
+.pc-4{background:linear-gradient(135deg,#e94560,#0f3460)}
+.pc-5{background:linear-gradient(135deg,#2d6a4f,#52b788)}
+.pc-6{background:linear-gradient(135deg,#d62828,#f77f00)}
+/* grid pattern backgrounds for cards */
+.bg-p1{background:#111;background-image:repeating-linear-gradient(0deg,rgba(232,113,0,0.04) 0,rgba(232,113,0,0.04) 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,rgba(232,113,0,0.04) 0,rgba(232,113,0,0.04) 1px,transparent 1px,transparent 40px)}
+.bg-p2{background:#0e1117;background-image:radial-gradient(rgba(83,72,183,0.15) 1px,transparent 1px);background-size:20px 20px}
+.bg-p3{background:#0a0e1a}
+.bg-p4{background:#13000a;background-image:radial-gradient(circle at 50% 50%,rgba(217,70,128,0.12),transparent 60%)}
+.bg-p5{background:#071210;background-image:radial-gradient(circle at 70% 30%,rgba(82,183,136,0.12),transparent 60%)}
+.bg-p6{background:#150000;background-image:radial-gradient(circle at 30% 70%,rgba(247,127,0,0.12),transparent 60%)}
+.portfolio-card-img{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;opacity:.15}
 
-  /* Glow float */
-  @keyframes ayo-float {
-    0%, 100% { transform: translateY(0px); }
-    50%       { transform: translateY(-12px); }
-  }
+/* PROCESS */
+.process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;margin-top:4rem;position:relative}
+.process-steps::before{content:'';position:absolute;top:28px;left:14%;right:14%;height:1px;background:linear-gradient(to right,transparent,rgba(232,113,0,0.3) 20%,rgba(232,113,0,0.3) 80%,transparent)}
+.process-step{text-align:center;position:relative}
+.step-num{width:56px;height:56px;border-radius:50%;background:var(--bg2);border:1px solid rgba(232,113,0,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:20px;font-weight:800;color:var(--orange);transition:background .3s,border-color .3s}
+.process-step:hover .step-num{background:var(--orange);color:#fff;border-color:var(--orange)}
+.process-step h3{font-size:1rem;font-weight:700;margin-bottom:.6rem}
+.process-step p{font-size:.825rem;color:var(--gray);line-height:1.6}
 
-  /* Fade-up entrance */
-  .ayo-fade { opacity: 0; transform: translateY(28px); transition: opacity .65s ease, transform .65s ease; }
-  .ayo-fade.visible { opacity: 1; transform: translateY(0); }
+/* STACK */
+.stack{background:var(--bg2)}
+.stack-grid{display:flex;gap:1.5rem;margin-top:3.5rem;flex-wrap:wrap}
+.stack-item{background:var(--bg);border:1px solid rgba(237,237,237,0.06);border-radius:16px;padding:1.8rem 2.2rem;display:flex;align-items:center;gap:1rem;transition:border-color .3s,transform .3s;flex:1;min-width:160px}
+.stack-item:hover{border-color:rgba(232,113,0,0.25);transform:translateY(-4px)}
+.stack-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff}
+.si-ae{background:#9999ff}
+.si-pr{background:#9999ff;background:linear-gradient(135deg,#ea77b5,#9b5de5)}
+.si-fr{background:#0099ff}
+.si-ps{background:#26c9ff;background:linear-gradient(135deg,#26c9ff,#006aff)}
+.si-ai{background:#ff9a00;background:linear-gradient(135deg,#ff9a00,#e35600)}
+.stack-name{font-size:.95rem;font-weight:700}
+.stack-cat{font-size:.75rem;color:var(--gray);margin-top:.1rem}
 
-  /* Hover card lift */
-  .ayo-card-hover { transition: border-color .3s, transform .3s, background .3s; }
-  .ayo-card-hover:hover { transform: translateY(-6px); }
+/* CONTACT */
+.contact-inner{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start}
+.contact-left h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:1.5rem}
+.contact-left h2 span{color:var(--orange)}
+.contact-left p{color:var(--gray);font-size:1rem;line-height:1.7;max-width:380px}
+.contact-email{margin-top:2.5rem;display:flex;align-items:center;gap:.75rem}
+.contact-email a{font-size:1.1rem;font-weight:700;color:var(--text);text-decoration:none;border-bottom:1px solid rgba(232,113,0,0.4);padding-bottom:2px;transition:color .2s,border-color .2s}
+.contact-email a:hover{color:var(--orange);border-color:var(--orange)}
+.contact-socials{margin-top:2rem;display:flex;gap:.75rem}
+.social-btn{width:42px;height:42px;border-radius:50%;background:var(--bg2);border:1px solid rgba(237,237,237,0.1);display:flex;align-items:center;justify-content:center;color:var(--gray);text-decoration:none;font-size:14px;font-weight:700;transition:all .2s}
+.social-btn:hover{border-color:var(--orange);color:var(--orange);background:rgba(232,113,0,0.08)}
+.contact-form{background:var(--bg2);border-radius:20px;padding:2.5rem;border:1px solid rgba(237,237,237,0.06)}
+.form-group{margin-bottom:1.25rem}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--gray);margin-bottom:.5rem;letter-spacing:.5px;text-transform:uppercase}
+.form-group input,.form-group textarea{width:100%;background:#111;border:1px solid rgba(237,237,237,0.08);border-radius:10px;padding:.85rem 1.1rem;color:var(--text);font-family:var(--font);font-size:.9rem;transition:border-color .2s;outline:none;resize:none}
+.form-group input:focus,.form-group textarea:focus{border-color:rgba(232,113,0,0.4)}
+.form-group textarea{height:110px}
+.form-submit{width:100%;background:var(--orange);color:#fff;border:none;padding:1rem;border-radius:100px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .2s,transform .15s;margin-top:.5rem}
+.form-submit:hover{background:var(--orange-light);transform:translateY(-2px)}
 
-  /* Portfolio card reveal */
-  .ayo-pc-content { opacity: 0; transform: translateY(10px); transition: opacity .3s, transform .3s; }
-  .ayo-pc-wrap:hover .ayo-pc-content { opacity: 1; transform: translateY(0); }
-  .ayo-pc-bg { transition: transform .5s; }
-  .ayo-pc-wrap:hover .ayo-pc-bg { transform: scale(1.06); }
+/* FOOTER */
+footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:flex;align-items:center;justify-content:space-between}
+.footer-copy{font-size:12px;color:rgba(214,214,214,0.4)}
+.footer-up{width:40px;height:40px;background:var(--bg2);border:1px solid rgba(237,237,237,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s,color .2s;color:var(--gray);font-size:16px;text-decoration:none}
+.footer-up:hover{border-color:var(--orange);color:var(--orange)}
 
-  /* Service card top bar */
-  .ayo-svc::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: #E87100;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform .3s;
-  }
-  .ayo-svc:hover::before { transform: scaleX(1); }
+/* SCROLL ANIMATIONS */
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
 
-  /* Form inputs */
-  .ayo-input {
-    width: 100%;
-    background: #111;
-    border: 1px solid rgba(237,237,237,0.08);
-    border-radius: 10px;
-    padding: .85rem 1.1rem;
-    color: #EDEDED;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: .9rem;
-    transition: border-color .2s;
-    outline: none;
-    resize: none;
-  }
-  .ayo-input:focus { border-color: rgba(232,113,0,0.45); }
-  .ayo-input::placeholder { color: rgba(214,214,214,0.4); }
-
-  /* Mobile nav backdrop */
-  .ayo-mobile-nav {
-    position: fixed;
-    inset: 0;
-    background: rgba(13,13,13,0.97);
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2.5rem;
-    backdrop-filter: blur(12px);
-    transition: opacity .3s, transform .3s;
-  }
-  .ayo-mobile-nav a {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #EDEDED;
-    text-decoration: none;
-    letter-spacing: -.5px;
-    transition: color .2s;
-  }
-  .ayo-mobile-nav a:hover { color: #E87100; }
-`
-
-// ─── Hook: fade-up on scroll ──────────────────────────────────
-function useFadeUp() {
-  const ref = useRef(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { el.classList.add("visible"); obs.disconnect() } },
-      { threshold: 0.1 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
-  return ref
+@media(max-width:900px){
+  nav{padding:1rem 1.5rem}
+  .nav-links{display:none}
+  .hero,.about,.services,section,.contact-inner,.about-inner{grid-template-columns:1fr;padding:5rem 1.5rem}
+  .hero{padding:7rem 1.5rem 3rem}
+  .hero-stats{gap:2rem}
+  .services-grid{grid-template-columns:1fr 1fr}
+  .portfolio-grid{grid-template-columns:1fr 1fr}
+  .process-steps{grid-template-columns:1fr 1fr;gap:3rem}
+  .process-steps::before{display:none}
+  .contact-inner{grid-template-columns:1fr;gap:3rem}
+  footer{padding:1.5rem}
 }
+@media(max-width:600px){
+  .services-grid{grid-template-columns:1fr}
+  .portfolio-grid{grid-template-columns:1fr}
+  .hero h1{font-size:2.2rem;letter-spacing:-1px}
+  .process-steps{grid-template-columns:1fr}
+  .stack-grid{flex-direction:column}
+}
+</style>
+</head>
+<body>
 
-// ─── FadeUp wrapper ───────────────────────────────────────────
-function FadeUp({ children, delay = 0, style = {}, className = "" }) {
-  const ref = useFadeUp()
-  return (
-    <div
-      ref={ref}
-      className={`ayo-fade ${className}`}
-      style={{ transitionDelay: `${delay}ms`, ...style }}
-    >
-      {children}
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">AL</div>
+    <span class="nav-brand">Ayo Leka</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#about">À propos</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#portfolio">Projets</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">Travaillons ensemble →</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg-line"></div>
+  <div class="hero-dot hero-dot-1"></div>
+  <div class="hero-dot hero-dot-2"></div>
+
+  <div class="hero-tag fade-up visible">
+    <span class="hero-tag-dot"></span>
+    Disponible pour de nouveaux projets
+  </div>
+
+  <h1 class="fade-up visible" style="transition-delay:.1s">
+    Je crée des vidéos<br>et animations qui<br><span>donnent du mouvement</span><br>aux marques.
+  </h1>
+
+  <p class="hero-sub fade-up visible" style="transition-delay:.2s">
+    Motion designer & monteur vidéo spécialisé dans le contenu performant, le storytelling visuel et les identités en mouvement.
+  </p>
+
+  <div class="hero-btns fade-up visible" style="transition-delay:.3s">
+    <a class="btn-primary" href="#portfolio">Voir mes projets ↓</a>
+    <a class="btn-secondary" href="#contact">Me contacter</a>
+  </div>
+
+  <div class="hero-stats fade-up visible" style="transition-delay:.4s">
+    <div>
+      <div class="stat-num">50<span>+</span></div>
+      <div class="stat-label">Projets livrés</div>
     </div>
-  )
-}
-
-// ─── DATA ─────────────────────────────────────────────────────
-const NAV_LINKS = [
-  { label: "À propos", href: "#about" },
-  { label: "Services", href: "#services" },
-  { label: "Projets", href: "#portfolio" },
-  { label: "Contact", href: "#contact" },
-]
-
-const STATS = [
-  { num: "50", label: "Projets livrés" },
-  { num: "3", label: "Années d'expérience" },
-  { num: "30", label: "Clients satisfaits" },
-]
-
-const SKILLS = ["Storytelling", "Motion Design", "Branding Visuel", "YouTube Editing", "Réseaux Sociaux", "Direction Artistique"]
-
-const SERVICES = [
-  { icon: "🎬", title: "Motion Design", desc: "Animations fluides et expressives qui donnent vie à vos messages. Titres animés, intros, transitions et motion graphics sur mesure." },
-  { icon: "✂️", title: "Montage Vidéo", desc: "Montage professionnel avec une vraie vision narrative. Rythme, émotion, précision — chaque coupe est pensée pour retenir l'attention." },
-  { icon: "🎨", title: "Direction Artistique", desc: "Définition de votre identité visuelle en mouvement. Charte graphique vidéo, moodboard, cohérence de marque sur tous vos formats." },
-  { icon: "📱", title: "Contenu Réseaux Sociaux", desc: "Reels, Shorts, TikToks et contenus verticaux pensés pour performer. Format adapté, rythme accrocheur, résultats mesurables." },
-  { icon: "▶️", title: "YouTube Editing", desc: "Montage long format orienté rétention. Intro accrocheuse, chapitres dynamiques, effets et graphiques intégrés pour booster vos vues." },
-  { icon: "💡", title: "Branding Visuel", desc: "Création de templates, logos animés, identité en mouvement pour assurer une cohérence visuelle forte sur tous vos supports." },
-]
-
-const PORTFOLIO_ITEMS = [
-  { emoji: "⚡", tag: "Motion Design", title: "Brand Reveal — TechLab",    bg: "bg-p1", colors: ["pc-1","pc-2"] },
-  { emoji: "🎬", tag: "YouTube",       title: "Série Documentaire — Opus",  bg: "bg-p2", colors: ["pc-3","pc-2"] },
-  { emoji: "💄", tag: "Ads",           title: "Campagne Pub — Glōw Beauty", bg: "bg-p4", colors: ["pc-4"] },
-  { emoji: "🌿", tag: "Social Media",  title: "Reels Pack — EcoVerde",      bg: "bg-p5", colors: ["pc-5"] },
-  { emoji: "🏀", tag: "Motion Design", title: "Highlights — SportMax",      bg: "bg-p6", colors: ["pc-6"] },
-  { emoji: "🚀", tag: "Branding",      title: "Brand Motion — Nexlify",     bg: "bg-p3", colors: ["pc-2","pc-3"] },
-]
-
-const FILTER_TAGS = ["Tous", "Motion", "YouTube", "Ads", "Social"]
-
-const PROCESS_STEPS = [
-  { num: "01", title: "Stratégie",           desc: "Brief approfondi, analyse des objectifs, identification de la cible et de la direction créative à adopter." },
-  { num: "02", title: "Direction Visuelle",  desc: "Moodboard, charte graphique, palette de couleurs et références visuelles validées avant toute production." },
-  { num: "03", title: "Production",          desc: "Montage, animation, effets et post-production avec une attention méticuleuse à chaque détail." },
-  { num: "04", title: "Livraison",           desc: "Export optimisé par plateforme, retours inclus, accompagnement jusqu'à la publication finale." },
-]
-
-const STACK_ITEMS = [
-  { abbr: "Ae", name: "After Effects",  cat: "Motion & Animation",     bg: "#9999ff" },
-  { abbr: "Pr", name: "Premiere Pro",   cat: "Montage vidéo",          bg: "linear-gradient(135deg,#ea77b5,#9b5de5)" },
-  { abbr: "Fr", name: "Framer",         cat: "Web & UI Design",        bg: "#0099ff" },
-  { abbr: "Ps", name: "Photoshop",      cat: "Retouche & Compositing", bg: "linear-gradient(135deg,#26c9ff,#006aff)" },
-  { abbr: "Ai", name: "Illustrator",    cat: "Graphisme vectoriel",    bg: "linear-gradient(135deg,#ff9a00,#e35600)" },
-]
-
-const SOCIALS = [
-  { label: "ig", title: "Instagram" },
-  { label: "in", title: "LinkedIn" },
-  { label: "yt", title: "YouTube" },
-  { label: "bē", title: "Behance" },
-]
-
-// ─── Portfolio card backgrounds ───────────────────────────────
-const BG_STYLES = {
-  "bg-p1": { background: "#111", backgroundImage: "repeating-linear-gradient(0deg,rgba(232,113,0,0.04) 0,rgba(232,113,0,0.04) 1px,transparent 1px,transparent 40px),repeating-linear-gradient(90deg,rgba(232,113,0,0.04) 0,rgba(232,113,0,0.04) 1px,transparent 1px,transparent 40px)" },
-  "bg-p2": { background: "#0e1117", backgroundImage: "radial-gradient(rgba(83,72,183,0.15) 1px,transparent 1px)", backgroundSize: "20px 20px" },
-  "bg-p3": { background: "#0a0e1a" },
-  "bg-p4": { background: "#13000a", backgroundImage: "radial-gradient(circle at 50% 50%,rgba(217,70,128,0.12),transparent 60%)" },
-  "bg-p5": { background: "#071210", backgroundImage: "radial-gradient(circle at 70% 30%,rgba(82,183,136,0.12),transparent 60%)" },
-  "bg-p6": { background: "#150000", backgroundImage: "radial-gradient(circle at 30% 70%,rgba(247,127,0,0.12),transparent 60%)" },
-}
-
-const COLOR_STYLES = {
-  "pc-1": "linear-gradient(135deg,#E87100,#FF9F45)",
-  "pc-2": "linear-gradient(135deg,#1a1a2e,#16213e)",
-  "pc-3": "linear-gradient(135deg,#0f3460,#533483)",
-  "pc-4": "linear-gradient(135deg,#e94560,#0f3460)",
-  "pc-5": "linear-gradient(135deg,#2d6a4f,#52b788)",
-  "pc-6": "linear-gradient(135deg,#d62828,#f77f00)",
-}
-
-// ─── Sub-components ───────────────────────────────────────────
-
-function InjectStyles() {
-  useEffect(() => {
-    const id = "ayo-leka-styles"
-    if (document.getElementById(id)) return
-    const style = document.createElement("style")
-    style.id = id
-    style.textContent = GLOBAL_CSS
-    document.head.appendChild(style)
-    return () => { const el = document.getElementById(id); el && el.remove() }
-  }, [])
-  return null
-}
-
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
-  }, [])
-
-  const scrollTo = useCallback((href) => {
-    setMobileOpen(false)
-    setTimeout(() => {
-      const el = document.querySelector(href)
-      el?.scrollIntoView({ behavior: "smooth" })
-    }, 10)
-  }, [])
-
-  return (
-    <>
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: "1.25rem clamp(1.5rem, 5vw, 4rem)",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: scrolled ? "rgba(13,13,13,0.95)" : "rgba(13,13,13,0.85)",
-        backdropFilter: "blur(14px)",
-        borderBottom: "1px solid rgba(232,113,0,0.08)",
-        transition: "background .3s",
-      }}>
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: ".6rem" }}>
-          <div style={{
-            width: 32, height: 32, background: COLORS.orange, borderRadius: 6,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 800, color: "#fff", letterSpacing: "-.5px",
-          }}>AL</div>
-          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-.3px" }}>Ayo Leka</span>
-        </div>
-
-        {/* Desktop links */}
-        <ul style={{ display: "flex", gap: "2.5rem", listStyle: "none", margin: 0 }}
-            className="ayo-desktop-nav">
-          {NAV_LINKS.map(({ label, href }) => (
-            <li key={href}>
-              <a
-                href={href}
-                onClick={e => { e.preventDefault(); scrollTo(href) }}
-                style={{ color: COLORS.gray, textDecoration: "none", fontSize: 13, fontWeight: 500, transition: "color .2s" }}
-                onMouseEnter={e => e.target.style.color = COLORS.orange}
-                onMouseLeave={e => e.target.style.color = COLORS.gray}
-              >{label}</a>
-            </li>
-          ))}
-        </ul>
-
-        {/* CTA + hamburger */}
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <button
-            onClick={() => scrollTo("#contact")}
-            style={{
-              background: COLORS.orange, color: "#fff", border: "none",
-              padding: ".55rem 1.4rem", borderRadius: 100, fontSize: 13,
-              fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-              transition: "background .2s, transform .2s",
-            }}
-            onMouseEnter={e => { e.target.style.background = COLORS.orangeLight; e.target.style.transform = "scale(1.03)" }}
-            onMouseLeave={e => { e.target.style.background = COLORS.orange; e.target.style.transform = "scale(1)" }}
-          >
-            Travaillons ensemble →
-          </button>
-
-          {/* Hamburger (mobile only) */}
-          <button
-            onClick={() => setMobileOpen(v => !v)}
-            className="ayo-hamburger"
-            style={{
-              background: "none", border: "1px solid rgba(237,237,237,0.1)",
-              borderRadius: 8, padding: ".4rem .6rem", color: COLORS.gray,
-              fontSize: 18, cursor: "pointer", lineHeight: 1,
-            }}
-            aria-label="Menu"
-          >{mobileOpen ? "✕" : "☰"}</button>
-        </div>
-      </nav>
-
-      {/* Mobile nav overlay */}
-      {mobileOpen && (
-        <div className="ayo-mobile-nav">
-          <div style={{ display: "flex", alignItems: "center", gap: ".6rem", marginBottom: "1rem" }}>
-            <div style={{ width: 36, height: 36, background: COLORS.orange, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: "#fff" }}>AL</div>
-            <span style={{ fontWeight: 700, fontSize: 16 }}>Ayo Leka</span>
-          </div>
-          {NAV_LINKS.map(({ label, href }) => (
-            <a key={href} href={href} onClick={e => { e.preventDefault(); scrollTo(href) }}>{label}</a>
-          ))}
-          <button
-            onClick={() => scrollTo("#contact")}
-            style={{
-              background: COLORS.orange, color: "#fff", border: "none",
-              padding: ".75rem 2rem", borderRadius: 100, fontSize: 14,
-              fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-              marginTop: "1rem",
-            }}
-          >Travaillons ensemble →</button>
-        </div>
-      )}
-
-      {/* Hide desktop nav on mobile */}
-      <style>{`
-        @media (max-width: 768px) {
-          .ayo-desktop-nav { display: none !important; }
-        }
-        @media (min-width: 769px) {
-          .ayo-hamburger { display: none !important; }
-        }
-      `}</style>
-    </>
-  )
-}
-
-function Hero() {
-  return (
-    <section id="home" style={{
-      minHeight: "100vh", display: "flex", flexDirection: "column",
-      justifyContent: "center",
-      padding: "8rem clamp(1.5rem, 5vw, 4rem) 4rem",
-      position: "relative", overflow: "hidden",
-    }}>
-      {/* Ambient glow */}
-      <div style={{ position: "absolute", top: 0, right: 0, width: "45%", height: "100%", background: "linear-gradient(180deg,rgba(232,113,0,0.04) 0%,transparent 80%)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", top: "20%", right: "20%", width: 1, height: 1, background: COLORS.orange, boxShadow: "0 0 80px 40px rgba(232,113,0,0.07)", animation: "ayo-float 6s ease-in-out infinite" }} />
-      <div style={{ position: "absolute", bottom: "30%", right: "45%", width: 1, height: 1, background: COLORS.orange, boxShadow: "0 0 60px 30px rgba(232,113,0,0.05)", animation: "ayo-float 8s ease-in-out infinite reverse" }} />
-
-      {/* Tag */}
-      <FadeUp>
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: ".5rem",
-          background: "rgba(232,113,0,0.10)", border: "1px solid rgba(232,113,0,0.22)",
-          color: COLORS.orange, padding: ".35rem 1rem", borderRadius: 100,
-          fontSize: 12, fontWeight: 600, letterSpacing: ".5px", textTransform: "uppercase",
-          marginBottom: "2rem", width: "fit-content",
-        }}>
-          <span style={{ width: 6, height: 6, background: COLORS.orange, borderRadius: "50%", animation: "ayo-pulse 2s infinite", display: "inline-block" }} />
-          Disponible pour de nouveaux projets
-        </div>
-      </FadeUp>
-
-      {/* Headline */}
-      <FadeUp delay={100}>
-        <h1 style={{
-          fontSize: "clamp(2.6rem, 6vw, 5.5rem)", fontWeight: 800,
-          lineHeight: 1.05, letterSpacing: "-2px",
-          maxWidth: 900, marginBottom: "1.75rem",
-        }}>
-          Je crée des vidéos<br />et animations qui<br />
-          <span style={{ color: COLORS.orange }}>donnent du mouvement</span><br />
-          aux marques.
-        </h1>
-      </FadeUp>
-
-      {/* Sub */}
-      <FadeUp delay={200}>
-        <p style={{ fontSize: "1.1rem", color: COLORS.gray, maxWidth: 500, lineHeight: 1.7, marginBottom: "3rem", fontWeight: 400 }}>
-          Motion designer & monteur vidéo spécialisé dans le contenu performant, le storytelling visuel et les identités en mouvement.
-        </p>
-      </FadeUp>
-
-      {/* Buttons */}
-      <FadeUp delay={300}>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <a href="#portfolio" onClick={e => { e.preventDefault(); document.querySelector("#portfolio")?.scrollIntoView({ behavior: "smooth" }) }}
-            style={{
-              background: COLORS.orange, color: "#fff", border: "none",
-              padding: ".85rem 2.2rem", borderRadius: 100, fontSize: 14,
-              fontWeight: 700, cursor: "pointer", textDecoration: "none",
-              display: "inline-flex", alignItems: "center", gap: ".5rem",
-              transition: "background .2s, transform .15s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = COLORS.orangeLight; e.currentTarget.style.transform = "translateY(-2px)" }}
-            onMouseLeave={e => { e.currentTarget.style.background = COLORS.orange; e.currentTarget.style.transform = "translateY(0)" }}
-          >Voir mes projets ↓</a>
-          <a href="#contact" onClick={e => { e.preventDefault(); document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" }) }}
-            style={{
-              background: "transparent", color: COLORS.text,
-              border: "1px solid rgba(237,237,237,0.2)",
-              padding: ".85rem 2.2rem", borderRadius: 100, fontSize: 14,
-              fontWeight: 600, cursor: "pointer", textDecoration: "none",
-              display: "inline-flex", alignItems: "center", gap: ".5rem",
-              transition: "border-color .2s, color .2s, transform .15s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = COLORS.orange; e.currentTarget.style.color = COLORS.orange; e.currentTarget.style.transform = "translateY(-2px)" }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(237,237,237,0.2)"; e.currentTarget.style.color = COLORS.text; e.currentTarget.style.transform = "translateY(0)" }}
-          >Me contacter</a>
-        </div>
-      </FadeUp>
-
-      {/* Stats */}
-      <FadeUp delay={400}>
-        <div style={{
-          display: "flex", gap: "clamp(1.5rem, 4vw, 3rem)",
-          marginTop: "5rem", paddingTop: "2.5rem",
-          borderTop: "1px solid rgba(237,237,237,0.08)",
-          flexWrap: "wrap",
-        }}>
-          {STATS.map(({ num, label }) => (
-            <div key={label}>
-              <div style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-1px" }}>
-                {num}<span style={{ color: COLORS.orange }}>+</span>
-              </div>
-              <div style={{ fontSize: 12, color: COLORS.gray, marginTop: ".2rem", fontWeight: 500 }}>{label}</div>
-            </div>
-          ))}
-        </div>
-      </FadeUp>
-    </section>
-  )
-}
-
-function About() {
-  return (
-    <section id="about" style={{ padding: "7rem clamp(1.5rem, 5vw, 4rem)", background: COLORS.bg2 }}>
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 420px), 1fr))",
-        gap: "clamp(3rem, 6vw, 6rem)",
-        alignItems: "center",
-      }}>
-        {/* Visual card */}
-        <FadeUp>
-          <div style={{
-            position: "relative", height: 460, background: "#151515",
-            borderRadius: 20, overflow: "hidden",
-            border: "1px solid rgba(232,113,0,0.1)",
-          }}>
-            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 30% 50%,rgba(232,113,0,0.08) 0%,transparent 60%)" }} />
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "1rem" }}>
-              <div style={{
-                width: 96, height: 96, borderRadius: "50%", background: COLORS.orange,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 32, fontWeight: 800, color: "#fff",
-              }}>AL</div>
-              <div style={{ fontSize: 14, color: COLORS.gray, fontWeight: 500 }}>Ayo Leka</div>
-              <div style={{ fontSize: 12, color: COLORS.gray, marginTop: "-.3rem" }}>Motion Designer</div>
-            </div>
-            <div style={{
-              position: "absolute", bottom: "1.5rem", left: "1.5rem",
-              background: "rgba(13,13,13,0.9)", border: "1px solid rgba(232,113,0,0.2)",
-              padding: ".7rem 1.1rem", borderRadius: 12,
-              display: "flex", alignItems: "center", gap: ".6rem",
-            }}>
-              <span style={{ width: 8, height: 8, background: "#22c55e", borderRadius: "50%", boxShadow: "0 0 8px rgba(34,197,94,0.5)", display: "inline-block" }} />
-              <span style={{ fontSize: 12, color: COLORS.text, fontWeight: 600 }}>Disponible & actif</span>
-            </div>
-          </div>
-        </FadeUp>
-
-        {/* Content */}
-        <FadeUp delay={150}>
-          <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: COLORS.orange, marginBottom: "1.2rem" }}>À propos</span>
-          <h2 style={{ fontSize: "clamp(1.8rem, 3vw, 2.6rem)", fontWeight: 800, letterSpacing: "-1px", marginBottom: "1.5rem", lineHeight: 1.15 }}>
-            Un créatif qui pense<br />mouvement, résultats.
-          </h2>
-          {["Je suis Ayo Leka, motion designer et monteur vidéo basé en France. Je crée des vidéos et animations à fort impact visuel pour les marques qui veulent se démarquer dans un univers saturé d'images.",
-            "Mon approche mêle rigueur créative, sens du détail et culture du résultat. Chaque projet est pensé pour captiver, raconter une histoire, et convertir — pas seulement être \"beau\".",
-            "Je travaille avec des créateurs, des marques et des entreprises qui comprennent la valeur du contenu premium."].map((p, i) => (
-            <p key={i} style={{ color: COLORS.gray, lineHeight: 1.8, marginBottom: "1.2rem", fontSize: ".95rem" }}>{p}</p>
-          ))}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem", marginTop: "2rem" }}>
-            {SKILLS.map(skill => (
-              <span key={skill} style={{
-                background: "rgba(232,113,0,0.08)", border: "1px solid rgba(232,113,0,0.15)",
-                color: COLORS.orange, padding: ".4rem 1rem", borderRadius: 100, fontSize: 12, fontWeight: 600,
-              }}>{skill}</span>
-            ))}
-          </div>
-        </FadeUp>
-      </div>
-    </section>
-  )
-}
-
-function Services() {
-  return (
-    <section id="services" style={{ padding: "7rem clamp(1.5rem, 5vw, 4rem)", background: COLORS.bg }}>
-      <div style={{ textAlign: "center", maxWidth: 600, margin: "0 auto" }}>
-        <FadeUp><span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: COLORS.orange, marginBottom: "1.2rem" }}>Services</span></FadeUp>
-        <FadeUp delay={100}><h2 style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-1.5px", lineHeight: 1.1, marginBottom: "1.2rem" }}>Ce que je crée<br />pour vous</h2></FadeUp>
-        <FadeUp delay={200}><p style={{ fontSize: "1rem", color: COLORS.gray, lineHeight: 1.7, margin: "0 auto" }}>Des prestations premium pensées pour produire un impact réel sur votre audience et votre marque.</p></FadeUp>
-      </div>
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
-        gap: "1.5rem", marginTop: "4rem",
-      }}>
-        {SERVICES.map(({ icon, title, desc }, i) => (
-          <FadeUp key={title} delay={i * 60}>
-            <div
-              className="ayo-card-hover ayo-svc"
-              style={{
-                background: COLORS.bg2, border: "1px solid rgba(237,237,237,0.06)",
-                borderRadius: 20, padding: "2.2rem", cursor: "default",
-                position: "relative", overflow: "hidden",
-                height: "100%",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(232,113,0,0.22)"; e.currentTarget.style.background = "#1e1e1e" }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(237,237,237,0.06)"; e.currentTarget.style.background = COLORS.bg2 }}
-            >
-              <div style={{ width: 48, height: 48, background: "rgba(232,113,0,0.1)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: "1.5rem" }}>{icon}</div>
-              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: ".75rem", letterSpacing: "-.3px" }}>{title}</h3>
-              <p style={{ fontSize: ".875rem", color: COLORS.gray, lineHeight: 1.7 }}>{desc}</p>
-            </div>
-          </FadeUp>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function Portfolio() {
-  const [active, setActive] = useState("Tous")
-
-  const filtered = PORTFOLIO_ITEMS.filter(item => {
-    if (active === "Tous") return true
-    if (active === "Motion") return item.tag === "Motion Design"
-    if (active === "YouTube") return item.tag === "YouTube"
-    if (active === "Ads") return item.tag === "Ads"
-    if (active === "Social") return item.tag === "Social Media"
-    return true
-  })
-
-  return (
-    <section id="portfolio" style={{ padding: "7rem clamp(1.5rem, 5vw, 4rem)", background: COLORS.bg2 }}>
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "1.5rem", marginBottom: "1.5rem" }}>
-        <div>
-          <FadeUp><span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: COLORS.orange, marginBottom: "1.2rem" }}>Portfolio</span></FadeUp>
-          <FadeUp delay={100}><h2 style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-1.5px", lineHeight: 1.1 }}>Projets récents</h2></FadeUp>
-        </div>
-        <FadeUp delay={200}>
-          <div style={{ display: "flex", gap: ".75rem", flexWrap: "wrap" }}>
-            {FILTER_TAGS.map(tag => (
-              <button
-                key={tag}
-                onClick={() => setActive(tag)}
-                style={{
-                  background: active === tag ? COLORS.orange : "transparent",
-                  border: `1px solid ${active === tag ? COLORS.orange : "rgba(237,237,237,0.1)"}`,
-                  color: active === tag ? "#fff" : COLORS.gray,
-                  padding: ".5rem 1.3rem", borderRadius: 100, fontSize: 13,
-                  fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                  transition: "all .2s",
-                }}
-              >{tag}</button>
-            ))}
-          </div>
-        </FadeUp>
-      </div>
-
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
-        gap: "1.5rem",
-      }}>
-        {filtered.map(({ emoji, tag, title, bg, colors }, i) => (
-          <FadeUp key={title} delay={i * 60}>
-            <div
-              className="ayo-pc-wrap"
-              style={{
-                background: "#111", borderRadius: 16, overflow: "hidden",
-                position: "relative", aspectRatio: "16/10", cursor: "pointer",
-                border: "1px solid rgba(237,237,237,0.05)",
-              }}
-            >
-              <div className="ayo-pc-bg" style={{ position: "absolute", inset: 0, ...BG_STYLES[bg] }}>
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem", opacity: .15 }}>{emoji}</div>
-              </div>
-              <div className="ayo-pc-content" style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(to top,rgba(0,0,0,0.9) 0%,transparent 55%)",
-                display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "1.5rem",
-              }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: COLORS.orange, marginBottom: ".4rem" }}>{tag}</div>
-                <div style={{ fontSize: "1rem", fontWeight: 700, color: "#fff" }}>{title}</div>
-                <div style={{ display: "flex", gap: ".5rem", marginTop: ".75rem" }}>
-                  {colors.map(c => (
-                    <div key={c} style={{ width: 28, height: 28, borderRadius: "50%", background: COLOR_STYLES[c], border: "2px solid rgba(255,255,255,0.2)" }} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </FadeUp>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function Process() {
-  return (
-    <section id="process" style={{ padding: "7rem clamp(1.5rem, 5vw, 4rem)", background: COLORS.bg }}>
-      <div style={{ textAlign: "center", maxWidth: 560, margin: "0 auto 1rem" }}>
-        <FadeUp><span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: COLORS.orange, marginBottom: "1.2rem" }}>Méthode</span></FadeUp>
-        <FadeUp delay={100}><h2 style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-1.5px", lineHeight: 1.1 }}>Un process pensé<br />pour livrer du premium</h2></FadeUp>
-      </div>
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))",
-        gap: "2rem", marginTop: "4rem", position: "relative",
-      }}>
-        {PROCESS_STEPS.map(({ num, title, desc }, i) => (
-          <FadeUp key={num} delay={i * 100}>
-            <div
-              style={{ textAlign: "center" }}
-              onMouseEnter={e => {
-                const dot = e.currentTarget.querySelector(".step-dot")
-                if (dot) { dot.style.background = COLORS.orange; dot.style.color = "#fff"; dot.style.borderColor = COLORS.orange }
-              }}
-              onMouseLeave={e => {
-                const dot = e.currentTarget.querySelector(".step-dot")
-                if (dot) { dot.style.background = COLORS.bg2; dot.style.color = COLORS.orange; dot.style.borderColor = "rgba(232,113,0,0.2)" }
-              }}
-            >
-              <div
-                className="step-dot"
-                style={{
-                  width: 56, height: 56, borderRadius: "50%",
-                  background: COLORS.bg2, border: "1px solid rgba(232,113,0,0.2)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  margin: "0 auto 1.5rem",
-                  fontSize: 20, fontWeight: 800, color: COLORS.orange,
-                  transition: "background .3s, border-color .3s, color .3s",
-                }}
-              >{num}</div>
-              <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: ".6rem" }}>{title}</h3>
-              <p style={{ fontSize: ".825rem", color: COLORS.gray, lineHeight: 1.6 }}>{desc}</p>
-            </div>
-          </FadeUp>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function Stack() {
-  return (
-    <section id="stack" style={{ padding: "7rem clamp(1.5rem, 5vw, 4rem)", background: COLORS.bg2 }}>
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-        <div>
-          <FadeUp><span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: COLORS.orange, marginBottom: "1.2rem" }}>Outils</span></FadeUp>
-          <FadeUp delay={100}><h2 style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)", fontWeight: 800, letterSpacing: "-1.5px", lineHeight: 1.1 }}>Mon arsenal créatif</h2></FadeUp>
-        </div>
-      </div>
-      <div style={{ display: "flex", gap: "1.5rem", marginTop: "3.5rem", flexWrap: "wrap" }}>
-        {STACK_ITEMS.map(({ abbr, name, cat, bg }, i) => (
-          <FadeUp key={name} delay={i * 70}>
-            <div
-              className="ayo-card-hover"
-              style={{
-                background: COLORS.bg, border: "1px solid rgba(237,237,237,0.06)",
-                borderRadius: 16, padding: "1.8rem 2.2rem",
-                display: "flex", alignItems: "center", gap: "1rem",
-                flex: "1", minWidth: 160,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(232,113,0,0.25)" }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(237,237,237,0.06)" }}
-            >
-              <div style={{
-                width: 42, height: 42, borderRadius: 10,
-                background: bg,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 16, fontWeight: 800, color: "#fff",
-                flexShrink: 0,
-              }}>{abbr}</div>
-              <div>
-                <div style={{ fontSize: ".95rem", fontWeight: 700 }}>{name}</div>
-                <div style={{ fontSize: ".75rem", color: COLORS.gray, marginTop: ".1rem" }}>{cat}</div>
-              </div>
-            </div>
-          </FadeUp>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", project: "", message: "" })
-  const [sent, setSent] = useState(false)
-
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
-  const handleSubmit = () => {
-    if (!form.name || !form.email) return
-    setSent(true)
-    setTimeout(() => setSent(false), 4000)
-    setForm({ name: "", email: "", project: "", message: "" })
-  }
-
-  return (
-    <section id="contact" style={{ padding: "7rem clamp(1.5rem, 5vw, 4rem)", background: COLORS.bg }}>
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 380px), 1fr))",
-        gap: "clamp(3rem, 6vw, 6rem)",
-        alignItems: "start",
-      }}>
-        {/* Left */}
-        <div>
-          <FadeUp><span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: COLORS.orange, marginBottom: "1.2rem" }}>Contact</span></FadeUp>
-          <FadeUp delay={100}>
-            <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 800, letterSpacing: "-1.5px", lineHeight: 1.1, marginBottom: "1.5rem" }}>
-              Construisons<br />quelque chose qui<br /><span style={{ color: COLORS.orange }}>marque les esprits.</span>
-            </h2>
-          </FadeUp>
-          <FadeUp delay={200}><p style={{ color: COLORS.gray, fontSize: "1rem", lineHeight: 1.7, maxWidth: 380 }}>Vous avez un projet en tête ? Parlons-en. Je suis disponible pour des collaborations ponctuelles ou des partenariats long terme.</p></FadeUp>
-          <FadeUp delay={300}>
-            <div style={{ marginTop: "2.5rem", display: "flex", alignItems: "center", gap: ".75rem" }}>
-              <span style={{ fontSize: "1.2rem" }}>📧</span>
-              <a href="mailto:hello@ayoleka.com" style={{
-                fontSize: "1.1rem", fontWeight: 700, color: COLORS.text, textDecoration: "none",
-                borderBottom: "1px solid rgba(232,113,0,0.4)", paddingBottom: 2, transition: "color .2s, border-color .2s",
-              }}
-                onMouseEnter={e => { e.target.style.color = COLORS.orange; e.target.style.borderColor = COLORS.orange }}
-                onMouseLeave={e => { e.target.style.color = COLORS.text; e.target.style.borderColor = "rgba(232,113,0,0.4)" }}
-              >hello@ayoleka.com</a>
-            </div>
-          </FadeUp>
-          <FadeUp delay={400}>
-            <div style={{ marginTop: "2rem", display: "flex", gap: ".75rem" }}>
-              {SOCIALS.map(({ label, title }) => (
-                <a key={label} href="#" title={title} style={{
-                  width: 42, height: 42, borderRadius: "50%", background: COLORS.bg2,
-                  border: "1px solid rgba(237,237,237,0.1)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  color: COLORS.gray, textDecoration: "none", fontSize: 13, fontWeight: 700,
-                  transition: "all .2s",
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = COLORS.orange; e.currentTarget.style.color = COLORS.orange; e.currentTarget.style.background = "rgba(232,113,0,0.08)" }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(237,237,237,0.1)"; e.currentTarget.style.color = COLORS.gray; e.currentTarget.style.background = COLORS.bg2 }}
-                >{label}</a>
-              ))}
-            </div>
-          </FadeUp>
-        </div>
-
-        {/* Form */}
-        <FadeUp delay={200}>
-          <div style={{ background: COLORS.bg2, borderRadius: 20, padding: "2.5rem", border: "1px solid rgba(237,237,237,0.06)" }}>
-            {[
-              { name: "name",    label: "Votre nom",      placeholder: "Ex : Sophie Martin",            type: "text" },
-              { name: "email",   label: "Email",          placeholder: "votre@email.com",               type: "email" },
-              { name: "project", label: "Type de projet", placeholder: "Ex : Motion Design, YouTube…",  type: "text" },
-            ].map(({ name, label, placeholder, type }) => (
-              <div key={name} style={{ marginBottom: "1.25rem" }}>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: COLORS.gray, marginBottom: ".5rem", letterSpacing: ".5px", textTransform: "uppercase" }}>{label}</label>
-                <input
-                  name={name}
-                  type={type}
-                  value={form[name]}
-                  onChange={handleChange}
-                  placeholder={placeholder}
-                  className="ayo-input"
-                />
-              </div>
-            ))}
-            <div style={{ marginBottom: "1.25rem" }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: COLORS.gray, marginBottom: ".5rem", letterSpacing: ".5px", textTransform: "uppercase" }}>Message</label>
-              <textarea
-                name="message"
-                value={form.message}
-                onChange={handleChange}
-                placeholder="Décrivez votre projet, votre budget, vos délais…"
-                className="ayo-input"
-                style={{ height: 110 }}
-              />
-            </div>
-            <button
-              onClick={handleSubmit}
-              style={{
-                width: "100%", background: sent ? "#22c55e" : COLORS.orange,
-                color: "#fff", border: "none", padding: "1rem",
-                borderRadius: 100, fontSize: 14, fontWeight: 700,
-                cursor: "pointer", fontFamily: "inherit",
-                transition: "background .3s, transform .15s", marginTop: ".5rem",
-              }}
-              onMouseEnter={e => { if (!sent) { e.target.style.background = COLORS.orangeLight; e.target.style.transform = "translateY(-2px)" } }}
-              onMouseLeave={e => { if (!sent) { e.target.style.background = COLORS.orange; e.target.style.transform = "translateY(0)" } }}
-            >
-              {sent ? "✓ Message envoyé !" : "Envoyer le message →"}
-            </button>
-          </div>
-        </FadeUp>
-      </div>
-    </section>
-  )
-}
-
-function Footer() {
-  return (
-    <footer style={{
-      padding: "2rem clamp(1.5rem, 5vw, 4rem)",
-      borderTop: "1px solid rgba(237,237,237,0.05)",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-    }}>
-      <div style={{ fontSize: 12, color: "rgba(214,214,214,0.4)" }}>
-        © {new Date().getFullYear()} Ayo Leka — Motion Designer & Video Editor
-      </div>
-      <a
-        href="#home"
-        onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }) }}
-        style={{
-          width: 40, height: 40, background: COLORS.bg2,
-          border: "1px solid rgba(237,237,237,0.08)", borderRadius: "50%",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: COLORS.gray, fontSize: 16, textDecoration: "none",
-          transition: "border-color .2s, color .2s",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = COLORS.orange; e.currentTarget.style.color = COLORS.orange }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(237,237,237,0.08)"; e.currentTarget.style.color = COLORS.gray }}
-        title="Retour en haut"
-      >↑</a>
-    </footer>
-  )
-}
-
-// ─── Root export (Framer-compatible) ─────────────────────────
-export default function AyoLekaPortfolio() {
-  return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", background: COLORS.bg, color: COLORS.text, overflowX: "hidden" }}>
-      <InjectStyles />
-      <Navbar />
-      <Hero />
-      <About />
-      <Services />
-      <Portfolio />
-      <Process />
-      <Stack />
-      <Contact />
-      <Footer />
+    <div>
+      <div class="stat-num">3<span>+</span></div>
+      <div class="stat-label">Années d'expérience</div>
     </div>
-  )
-}
+    <div>
+      <div class="stat-num">30<span>+</span></div>
+      <div class="stat-label">Clients satisfaits</div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-inner">
+    <div class="about-visual fade-up">
+      <div class="about-visual-bg"></div>
+      <div class="about-img-placeholder">
+        <div class="about-av">AL</div>
+        <div class="about-av-name">Ayo Leka</div>
+        <div style="font-size:12px;color:var(--gray);margin-top:-.3rem">Motion Designer</div>
+      </div>
+      <div class="about-badge">
+        <div class="badge-dot"></div>
+        <div class="badge-text">Disponible & actif</div>
+      </div>
+    </div>
+    <div class="about-content fade-up" style="transition-delay:.15s">
+      <span class="section-tag">À propos</span>
+      <h2>Un créatif qui pense<br>mouvement, résultats.</h2>
+      <p>Je suis Ayo Leka, motion designer et monteur vidéo basé en France. Je crée des vidéos et animations à fort impact visuel pour les marques qui veulent se démarquer dans un univers saturé d'images.</p>
+      <p>Mon approche mêle rigueur créative, sens du détail et culture du résultat. Chaque projet est pensé pour captiver, raconter une histoire, et convertir — pas seulement être "beau".</p>
+      <p>Je travaille avec des créateurs, des marques et des entreprises qui comprennent la valeur du contenu premium.</p>
+      <div class="about-skills">
+        <span class="skill-pill">Storytelling</span>
+        <span class="skill-pill">Motion Design</span>
+        <span class="skill-pill">Branding Visuel</span>
+        <span class="skill-pill">YouTube Editing</span>
+        <span class="skill-pill">Réseaux Sociaux</span>
+        <span class="skill-pill">Direction Artistique</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services" style="background:var(--bg)">
+  <div style="text-align:center;max-width:600px;margin:0 auto">
+    <span class="section-tag fade-up">Services</span>
+    <h2 class="section-title fade-up" style="transition-delay:.1s">Ce que je crée<br>pour vous</h2>
+    <p class="section-sub fade-up" style="margin:0 auto;text-align:center;transition-delay:.2s">Des prestations premium pensées pour produire un impact réel sur votre audience et votre marque.</p>
+  </div>
+  <div class="services-grid">
+    <div class="service-card fade-up">
+      <div class="service-icon">🎬</div>
+      <h3>Motion Design</h3>
+      <p>Animations fluides et expressives qui donnent vie à vos messages. Titres animés, intros, transitions et motion graphics sur mesure.</p>
+    </div>
+    <div class="service-card fade-up" style="transition-delay:.08s">
+      <div class="service-icon">✂️</div>
+      <h3>Montage Vidéo</h3>
+      <p>Montage professionnel avec une vraie vision narrative. Rythme, émotion, précision — chaque coupe est pensée pour retenir l'attention.</p>
+    </div>
+    <div class="service-card fade-up" style="transition-delay:.16s">
+      <div class="service-icon">🎨</div>
+      <h3>Direction Artistique</h3>
+      <p>Définition de votre identité visuelle en mouvement. Charte graphique vidéo, moodboard, cohérence de marque sur tous vos formats.</p>
+    </div>
+    <div class="service-card fade-up" style="transition-delay:.24s">
+      <div class="service-icon">📱</div>
+      <h3>Contenu Réseaux Sociaux</h3>
+      <p>Reels, Shorts, TikToks et contenus verticaux pensés pour performer. Format adapté, rythme accrocheur, résultats mesurables.</p>
+    </div>
+    <div class="service-card fade-up" style="transition-delay:.32s">
+      <div class="service-icon">▶️</div>
+      <h3>YouTube Editing</h3>
+      <p>Montage long format orienté rétention. Intro accrocheuse, chapitres dynamiques, effets et graphiques intégrés pour booster vos vues.</p>
+    </div>
+    <div class="service-card fade-up" style="transition-delay:.4s">
+      <div class="service-icon">💡</div>
+      <h3>Branding Visuel</h3>
+      <p>Création de templates, logos animés, identité en mouvement pour assurer une cohérence visuelle forte sur tous vos supports.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section class="portfolio" id="portfolio">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;margin-bottom:1.5rem">
+    <div>
+      <span class="section-tag fade-up">Portfolio</span>
+      <h2 class="section-title fade-up" style="transition-delay:.1s;margin-bottom:0">Projets récents</h2>
+    </div>
+    <div class="portfolio-filter fade-up" style="transition-delay:.2s">
+      <button class="filter-btn active">Tous</button>
+      <button class="filter-btn">Motion</button>
+      <button class="filter-btn">YouTube</button>
+      <button class="filter-btn">Ads</button>
+      <button class="filter-btn">Social</button>
+    </div>
+  </div>
+  <div class="portfolio-grid">
+    <div class="portfolio-card fade-up">
+      <div class="portfolio-card-bg bg-p1"><div class="portfolio-card-img">⚡</div></div>
+      <div class="portfolio-card-content">
+        <div class="pc-tag">Motion Design</div>
+        <div class="pc-title">Brand Reveal — TechLab</div>
+        <div class="pc-colors"><div class="pc-c pc-1"></div><div class="pc-c pc-2"></div></div>
+      </div>
+    </div>
+    <div class="portfolio-card fade-up" style="transition-delay:.08s">
+      <div class="portfolio-card-bg bg-p2"><div class="portfolio-card-img">🎬</div></div>
+      <div class="portfolio-card-content">
+        <div class="pc-tag">YouTube</div>
+        <div class="pc-title">Série Documentaire — Opus</div>
+        <div class="pc-colors"><div class="pc-c pc-3"></div><div class="pc-c pc-2"></div></div>
+      </div>
+    </div>
+    <div class="portfolio-card fade-up" style="transition-delay:.16s">
+      <div class="portfolio-card-bg bg-p4"><div class="portfolio-card-img">💄</div></div>
+      <div class="portfolio-card-content">
+        <div class="pc-tag">Ads</div>
+        <div class="pc-title">Campagne Pub — Glōw Beauty</div>
+        <div class="pc-colors"><div class="pc-c pc-4"></div></div>
+      </div>
+    </div>
+    <div class="portfolio-card fade-up" style="transition-delay:.24s">
+      <div class="portfolio-card-bg bg-p5"><div class="portfolio-card-img">🌿</div></div>
+      <div class="portfolio-card-content">
+        <div class="pc-tag">Social Media</div>
+        <div class="pc-title">Reels Pack — EcoVerde</div>
+        <div class="pc-colors"><div class="pc-c pc-5"></div></div>
+      </div>
+    </div>
+    <div class="portfolio-card fade-up" style="transition-delay:.32s">
+      <div class="portfolio-card-bg bg-p6"><div class="portfolio-card-img">🏀</div></div>
+      <div class="portfolio-card-content">
+        <div class="pc-tag">Motion Design</div>
+        <div class="pc-title">Highlights — SportMax</div>
+        <div class="pc-colors"><div class="pc-c pc-6"></div></div>
+      </div>
+    </div>
+    <div class="portfolio-card fade-up" style="transition-delay:.4s">
+      <div class="portfolio-card-bg bg-p3"><div class="portfolio-card-img">🚀</div></div>
+      <div class="portfolio-card-content">
+        <div class="pc-tag">Branding</div>
+        <div class="pc-title">Brand Motion — Nexlify</div>
+        <div class="pc-colors"><div class="pc-c pc-2"></div><div class="pc-c pc-3"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" style="background:var(--bg)">
+  <div style="text-align:center;max-width:560px;margin:0 auto 1rem">
+    <span class="section-tag fade-up">Méthode</span>
+    <h2 class="section-title fade-up" style="transition-delay:.1s">Un process pensé<br>pour livrer du premium</h2>
+  </div>
+  <div class="process-steps">
+    <div class="process-step fade-up">
+      <div class="step-num">01</div>
+      <h3>Stratégie</h3>
+      <p>Brief approfondi, analyse des objectifs, identification de la cible et de la direction créative à adopter.</p>
+    </div>
+    <div class="process-step fade-up" style="transition-delay:.1s">
+      <div class="step-num">02</div>
+      <h3>Direction Visuelle</h3>
+      <p>Moodboard, charte graphique, palette de couleurs et références visuelles validées avant toute production.</p>
+    </div>
+    <div class="process-step fade-up" style="transition-delay:.2s">
+      <div class="step-num">03</div>
+      <h3>Production</h3>
+      <p>Montage, animation, effets et post-production avec une attention méticuleuse à chaque détail.</p>
+    </div>
+    <div class="process-step fade-up" style="transition-delay:.3s">
+      <div class="step-num">04</div>
+      <h3>Livraison</h3>
+      <p>Export optimisé par plateforme, retours inclus, accompagnement jusqu'à la publication finale.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section class="stack" id="stack">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div>
+      <span class="section-tag fade-up">Outils</span>
+      <h2 class="section-title fade-up" style="transition-delay:.1s;margin-bottom:0">Mon arsenal créatif</h2>
+    </div>
+  </div>
+  <div class="stack-grid">
+    <div class="stack-item fade-up">
+      <div class="stack-icon si-ae">Ae</div>
+      <div><div class="stack-name">After Effects</div><div class="stack-cat">Motion & Animation</div></div>
+    </div>
+    <div class="stack-item fade-up" style="transition-delay:.08s">
+      <div class="stack-icon si-pr">Pr</div>
+      <div><div class="stack-name">Premiere Pro</div><div class="stack-cat">Montage vidéo</div></div>
+    </div>
+    <div class="stack-item fade-up" style="transition-delay:.16s">
+      <div class="stack-icon si-fr">Fr</div>
+      <div><div class="stack-name">Framer</div><div class="stack-cat">Web & UI Design</div></div>
+    </div>
+    <div class="stack-item fade-up" style="transition-delay:.24s">
+      <div class="stack-icon si-ps">Ps</div>
+      <div><div class="stack-name">Photoshop</div><div class="stack-cat">Retouche & Compositing</div></div>
+    </div>
+    <div class="stack-item fade-up" style="transition-delay:.32s">
+      <div class="stack-icon si-ai">Ai</div>
+      <div><div class="stack-name">Illustrator</div><div class="stack-cat">Graphisme vectoriel</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" style="background:var(--bg)">
+  <div class="contact-inner">
+    <div>
+      <span class="section-tag fade-up">Contact</span>
+      <h2 class="contact-left fade-up" style="font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:1.5rem;transition-delay:.1s">Construisons<br>quelque chose qui<br><span style="color:var(--orange)">marque les esprits.</span></h2>
+      <p class="fade-up" style="color:var(--gray);font-size:1rem;line-height:1.7;max-width:380px;transition-delay:.2s">Vous avez un projet en tête ? Parlons-en. Je suis disponible pour des collaborations ponctuelles ou des partenariats long terme.</p>
+      <div class="contact-email fade-up" style="transition-delay:.3s">
+        <span style="font-size:1.2rem">📧</span>
+        <a href="mailto:hello@ayoleka.com">hello@ayoleka.com</a>
+      </div>
+      <div class="contact-socials fade-up" style="transition-delay:.4s">
+        <a class="social-btn" href="#" title="Instagram">ig</a>
+        <a class="social-btn" href="#" title="LinkedIn">in</a>
+        <a class="social-btn" href="#" title="YouTube">yt</a>
+        <a class="social-btn" href="#" title="Behance">bē</a>
+      </div>
+    </div>
+    <div class="contact-form fade-up" style="transition-delay:.2s">
+      <div class="form-group">
+        <label>Votre nom</label>
+        <input type="text" placeholder="Ex : Sophie Martin">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" placeholder="votre@email.com">
+      </div>
+      <div class="form-group">
+        <label>Type de projet</label>
+        <input type="text" placeholder="Ex : Motion Design, YouTube Editing…">
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea placeholder="Décrivez votre projet, votre budget, vos délais…"></textarea>
+      </div>
+      <button class="form-submit" onclick="alert('Message envoyé ! Ayo vous répondra sous 24h. 🎬')">Envoyer le message →</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-copy">© 2024 Ayo Leka — Motion Designer & Video Editor</div>
+  <a class="footer-up" href="#home" title="Retour en haut">↑</a>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible') });
+}, {threshold: 0.12});
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
