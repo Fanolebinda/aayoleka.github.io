@@ -221,11 +221,15 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
   </div>
 
   <h1 class="fade-up visible" style="transition-delay:.1s">
-   Vous cherchez des vidéos<br>et animations<br><span>qui donnent du mouvement</span><br>à votre image et racontent une vraie histoire ?
+    Vous cherchez des vidéos<br>
+    et animations<br>
+    <span>qui donnent du mouvement</span><br>
+    à votre image et racontent une vraie histoire ?
   </h1>
 
   <p class="hero-sub fade-up visible" style="transition-delay:.2s">
-   Monteur vidéo & motion designer spécialisé dans le storytelling visuel, les contenus dynamiques et les identités en mouvement.
+    Monteur vidéo & motion designer spécialisé dans le storytelling visuel,
+    les contenus dynamiques et les identités en mouvement.
   </p>
 
   <div class="hero-btns fade-up visible" style="transition-delay:.3s">
@@ -233,21 +237,64 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
     <a class="btn-secondary" href="#contact">Me contacter</a>
   </div>
 
+  <!-- HERO STATS -->
   <div class="hero-stats fade-up visible" style="transition-delay:.4s">
+
     <div>
-      <div class="stat-num">50<span>+</span></div>
+      <div class="stat-num">
+        <span class="counter" data-target="100">0</span><span>+</span>
+      </div>
       <div class="stat-label">Projets livrés</div>
     </div>
+
     <div>
-      <div class="stat-num">3<span>+</span></div>
+      <div class="stat-num">
+        <span class="counter" data-target="3">0</span><span>+</span>
+      </div>
       <div class="stat-label">Années d'expérience</div>
     </div>
+
     <div>
-      <div class="stat-num">30<span>+</span></div>
+      <div class="stat-num">
+        <span class="counter" data-target="10">0</span><span>+</span>
+      </div>
       <div class="stat-label">Clients satisfaits</div>
     </div>
+
   </div>
 </section>
+
+<!-- SCRIPT COUNTER -->
+<script>
+  const counters = document.querySelectorAll(".counter");
+
+  counters.forEach(counter => {
+
+    const updateCounter = () => {
+
+      const target = +counter.getAttribute("data-target");
+      const current = +counter.innerText;
+
+      const increment = target / 80;
+
+      if(current < target){
+
+        counter.innerText = Math.ceil(current + increment);
+
+        setTimeout(updateCounter, 20);
+
+      } else {
+
+        counter.innerText = target;
+
+      }
+
+    };
+
+    updateCounter();
+
+  });
+</script>
 
 <!-- ABOUT -->
 <section class="about" id="about">
