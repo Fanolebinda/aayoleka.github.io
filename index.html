@@ -237,26 +237,66 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
     <a class="btn-secondary" href="#contact">Me contacter</a>
   </div>
 
+  <!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg-line"></div>
+  <div class="hero-dot hero-dot-1"></div>
+  <div class="hero-dot hero-dot-2"></div>
+
+  <div class="hero-tag fade-up visible">
+    <span class="hero-tag-dot"></span>
+    Disponible pour de nouveaux projets
+  </div>
+
+  <h1 class="fade-up visible" style="transition-delay:.1s">
+    Vous cherchez des vidéos<br>
+    et animations<br>
+    <span>qui donnent du mouvement</span><br>
+    à votre image et racontent une vraie histoire ?
+  </h1>
+
+  <p class="hero-sub fade-up visible" style="transition-delay:.2s">
+    Monteur vidéo & motion designer spécialisé dans le storytelling visuel,
+    les contenus dynamiques et les identités en mouvement.
+  </p>
+
+  <div class="hero-btns fade-up visible" style="transition-delay:.3s">
+    <a class="btn-primary" href="#portfolio">Voir mes projets ↓</a>
+    <a class="btn-secondary" href="#contact">Me contacter</a>
+  </div>
+
   <!-- HERO STATS -->
-  <div class="hero-stats fade-up visible" style="transition-delay:.10s">
+  <div class="hero-stats fade-up visible" style="transition-delay:.4s">
 
     <div>
       <div class="stat-num">
-        <span class="counter" data-target="100">0</span><span>+</span>
+        <span 
+          class="counter" 
+          data-target="100"
+          data-duration="2000"
+        >0</span><span>+</span>
       </div>
       <div class="stat-label">Projets livrés</div>
     </div>
 
     <div>
       <div class="stat-num">
-        <span class="counter" data-target="3">0</span><span>+</span>
+        <span 
+          class="counter" 
+          data-target="3"
+          data-duration="1500"
+        >0</span><span>+</span>
       </div>
       <div class="stat-label">Années d'expérience</div>
     </div>
 
     <div>
       <div class="stat-num">
-        <span class="counter" data-target="10">0</span><span>+</span>
+        <span 
+          class="counter" 
+          data-target="10"
+          data-duration="1800"
+        >0</span><span>+</span>
       </div>
       <div class="stat-label">Clients satisfaits</div>
     </div>
@@ -264,38 +304,43 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
   </div>
 </section>
 
-<!-- SCRIPT COUNTER -->
+<!-- COUNTER SCRIPT -->
 <script>
-  const counters = document.querySelectorAll(".counter");
 
-  counters.forEach(counter => {
+const counters = document.querySelectorAll(".counter");
+
+counters.forEach(counter => {
+
+    const target = +counter.getAttribute("data-target");
+    const duration = +counter.getAttribute("data-duration");
+
+    let start = 0;
+
+    const increment = target / (duration / 16);
 
     const updateCounter = () => {
 
-      const target = +counter.getAttribute("data-target");
-      const current = +counter.innerText;
+        start += increment;
 
-      const increment = target / 80;
+        if(start < target){
 
-      if(current < target){
+            counter.innerText = Math.ceil(start);
 
-        counter.innerText = Math.ceil(current + increment);
+            requestAnimationFrame(updateCounter);
 
-        setTimeout(updateCounter, 20);
+        } else {
 
-      } else {
+            counter.innerText = target;
 
-        counter.innerText = target;
-
-      }
+        }
 
     };
 
     updateCounter();
 
-  });
-</script>
+});
 
+</script>
 <!-- ABOUT -->
 <section class="about" id="about">
   <div class="about-inner">
@@ -569,7 +614,7 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
       onclick="ouvrirVideo('ClUmWGzI3hs')"
       style="cursor:pointer;">
       <iframe
-        src="https://www.youtube.com/embed/Fwu-6ssRuck?autoplay=1&mute=1&loop=1&playlist=Fwu-6ssRuck&controls=0&rel=0"
+        src="https://www.youtube.com/embed/lUmWGzI3hs?autoplay=1&mute=1&loop=1&playlist=lUmWGzI3hs&controls=0&rel=0"
         style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;pointer-events:none;"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;"
       ></iframe>
@@ -585,7 +630,7 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
       ">▶</div>
       <div class="portfolio-card-content" style="opacity:1;transform:none;">
         <div class="pc-tag">Vidéo 07</div>
-        <div class="pc-title">Face cam</div>
+        <div class="pc-title">Ads & Reels</div>
       </div>
     </div>
 
