@@ -219,7 +219,23 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
     width:55%;height:100%;
     z-index:0;
     pointer-events:none;
+    overflow:hidden;
   ">
+    <!-- La vidéo YouTube -->
+      <iframe
+        src="https://www.youtube.com/embed/iRoNxY1l7Xs?autoplay=1&mute=1&loop=1&playlist=iRoNxY1l7Xs&controls=0&rel=0&showinfo=0&modestbranding=1"
+        style="
+          position:absolute;
+          top:50%;left:50%;
+          transform:translate(-50%,-50%);
+          width:130%;height:130%;
+          border:none;
+          opacity:0.65;
+          filter:blur(1px);
+        "
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;"
+      ></iframe>
+    </div>
     <!-- Dégradé flou vers la gauche -->
     <div style="
       position:absolute;
@@ -236,22 +252,6 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
       background:linear-gradient(to top, #0D0D0D 0%, transparent 100%);
       z-index:2;
     "></div>
-
-    <!-- La vidéo YouTube -->
-    <iframe
-      src="https://www.youtube.com/embed/iRoNxY1l7Xs?autoplay=1&mute=1&loop=1&playlist=iRoNxY1l7Xs&controls=0&rel=0&showinfo=0&modestbranding=1"
-      style="
-        position:absolute;
-        top:50%;left:50%;
-        transform:translate(-50%,-50%);
-        width:130%;height:130%;
-        border:none;
-        opacity:0.65;
-        filter:blur(1px);
-      "
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;"
-    ></iframe>
-  </div>
 
   <!-- CONTENU TEXTE — au dessus de la vidéo -->
   <div style="position:relative;z-index:3;">
