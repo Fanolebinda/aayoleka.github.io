@@ -216,15 +216,15 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
   <div style="
     position:absolute;
     top:0;right:0;
-    width:65%;height:100%;
+    width:55%;height:100%;
     z-index:0;
     pointer-events:none;
   ">
     <!-- Dégradé flou vers la gauche -->
     <div style="
       position:absolute;
-      top:0;left:0;
-      width:70%;height:100%;
+      top:0;left:-2;
+      width:65%;height:100%;
       background:linear-gradient(to right, #0D0D0D 0%, rgba(13,13,13,0.85) 40%, transparent 100%);
       z-index:2;
     "></div>
@@ -244,9 +244,9 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
         position:absolute;
         top:50%;left:50%;
         transform:translate(-50%,-50%);
-        width:100%;height:100%;
+        width:130%;height:130%;
         border:none;
-        opacity:0.6;
+        opacity:0.65;
         filter:blur(1px);
       "
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;"
@@ -353,16 +353,39 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
   });
   
   </script>
-  <!-- RESPONSIVE MOBILE -->
+  <!-- RESPONSIVE -->
   <style>
+    /* TABLET */
+    @media (max-width: 1024px) {
+      #home > div:first-child {
+        width: 70%;
+        opacity: 0.5;
+      }
+    }
+
+    /* MOBILE */
     @media (max-width: 768px) {
       #home > div:first-child {
         width: 100%;
-        opacity: 0.3;
+        height: 100%;
+        top: 0;
+        right: 0;
+        opacity: 1;
+      }
+      #home > div:first-child iframe {
+        width: 200%;
+        height: 200%;
+        opacity: 0.35;
       }
       #home > div:first-child > div:first-child {
         width: 100%;
-        background: linear-gradient(to bottom, #0D0D0D 0%, rgba(13,13,13,0.5) 50%, #0D0D0D 100%);
+        left: 0;
+        background: linear-gradient(to bottom,
+          #0D0D0D 0%,
+          rgba(13,13,13,0.6) 30%,
+          rgba(13,13,13,0.6) 70%,
+          #0D0D0D 100%
+        );
       }
     }
   </style>
