@@ -221,55 +221,58 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
     pointer-events:none;
     overflow:hidden;
   ">
-    <!-- La vidéo YouTube -->
-      <iframe
-        src="https://www.youtube.com/embed/iRoNxY1l7Xs?autoplay=1&mute=1&loop=1&playlist=iRoNxY1l7Xs&controls=0&rel=0&showinfo=0&modestbranding=1"
-        style="
-          position:absolute;
-          top:50%;left:50%;
-          transform:translate(-50%,-50%);
-          width:100%;height:100%;
-          border:none;
-          opacity:0.65;
-          filter:blur(1px);
-        "
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;"
-      ></iframe>
-    </div>
-    <!-- DÉGRADÉ — positionné sur toute la section pas sur la vidéo -->
-    <div style="
-      position:absolute;
-      top:0;left:-10;
-      width:100%;height:100%;
-      background:linear-gradient(to right,
-        #0D0D0D 0%,
-        #0D0D0D 25%,
-        rgba(13,13,13,0.85) 40%,
-        rgba(13,13,13,0.3) 55%,
-        transparent 100%
-      );
-      z-index:1;
-      pointer-events:none;
-    "></div>
-    <!-- Dégradé flou vers le bas -->
-    <div style="
-      position:absolute;
-      bottom:0;left:0;right:0;
-      height:40%;
-      background:linear-gradient(to top, #0D0D0D 0%, transparent 100%);
-      z-index:1;
-    "></div>
-    <!-- DÉGRADÉ HAUT -->
-    <div style="
-      position:absolute;
-      top:0;left:0;right:0;
-      height:20%;
-      background:linear-gradient(to bottom, #0D0D0D 0%, transparent 100%);
-      z-index:1;
-      pointer-events:none;
-    "></div>
+    <iframe
+      src="https://www.youtube.com/embed/iRoNxY1l7Xs?autoplay=1&mute=1&loop=1&playlist=iRoNxY1l7Xs&controls=0&rel=0&showinfo=0&modestbranding=1"
+      style="
+        position:absolute;
+        top:50%;left:50%;
+        transform:translate(-50%,-50%);
+        width:100%;height:100%;
+        border:none;
+        opacity:0.65;
+        filter:blur(1px);
+      "
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;"
+    ></iframe>
+  </div>
 
-  <!-- CONTENU TEXTE — au dessus de la vidéo -->
+  <!-- DÉGRADÉ GAUCHE -->
+  <div style="
+    position:absolute;
+    top:0;left:0;
+    width:100%;height:100%;
+    background:linear-gradient(to right,
+      #0D0D0D 0%,
+      #0D0D0D 25%,
+      rgba(13,13,13,0.85) 40%,
+      rgba(13,13,13,0.3) 55%,
+      transparent 100%
+    );
+    z-index:1;
+    pointer-events:none;
+  "></div>
+
+  <!-- DÉGRADÉ BAS -->
+  <div style="
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:40%;
+    background:linear-gradient(to top, #0D0D0D 0%, transparent 100%);
+    z-index:1;
+    pointer-events:none;
+  "></div>
+
+  <!-- DÉGRADÉ HAUT -->
+  <div style="
+    position:absolute;
+    top:0;left:0;right:0;
+    height:20%;
+    background:linear-gradient(to bottom, #0D0D0D 0%, transparent 100%);
+    z-index:1;
+    pointer-events:none;
+  "></div>
+
+  <!-- CONTENU TEXTE + STATS — tout ensemble dans z-index:3 -->
   <div style="position:relative;z-index:3;">
 
     <div class="hero-bg-line"></div>
@@ -296,116 +299,63 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
       <a class="btn-primary" href="#portfolio">Voir mes projets ↓</a>
       <a class="btn-secondary" href="#contact">Me contacter</a>
     </div>
-  </div>
-  <!-- HERO STATS -->
-  <div class="hero-stats fade-up visible" style="transition-delay:.4s">
-    <div>
-      <div class="stat-num">
-        <span 
-          class="counter" 
-          data-target="100"
-          data-duration="2200"
-        >0</span><span>+</span>
-      </div>
-      <div class="stat-label">Projets livrés</div>
-    </div>
-    <div>
-      <div class="stat-num">
-        <span 
-          class="counter" 
-          data-target="3"
-          data-duration="10000"
-        >0</span><span>+</span>
-      </div>
-      <div class="stat-label">Années d'expérience</div>
-    </div>
-    <div>
-      <div class="stat-num">
-        <span 
-          class="counter" 
-          data-target="10"
-          data-duration="5000"
-        >0</span><span>+</span>
-      </div>
-      <div class="stat-label">Clients satisfaits</div>
-    </div>
-    </div>
-  </section>
-  
-  <!-- COUNTER SCRIPT -->
-  <script>
-  
-  const counters = document.querySelectorAll(".counter");
-  
-  counters.forEach(counter => {
-  
-      const target = +counter.getAttribute("data-target");
-      const duration = +counter.getAttribute("data-duration");
-  
-      let start = 0;
-  
-      const increment = target / (duration / 26);
-  
-      const updateCounter = () => {
-  
-          start += increment;
-  
-          if(start < target){
-  
-              counter.innerText = Math.ceil(start);
-  
-              requestAnimationFrame(updateCounter);
-  
-          } else {
-  
-              counter.innerText = target;
-  
-          }
-  
-      };
-  
-      updateCounter();
-  
-  });
-  
-  </script>
-  <!-- RESPONSIVE -->
-  <style>
-    /* TABLET */
-    @media (max-width: 1024px) {
-      #home > div:first-child {
-        width: 70%;
-        opacity: 0.5;
-      }
-    }
 
-    /* MOBILE */
-    @media (max-width: 768px) {
-      #home > div:first-child {
-        width: 100%;
-        height: 100%;
-        top: 0;
-        right: 0;
-        opacity: 1;
-      }
-      #home > div:first-child iframe {
-        width: 200%;
-        height: 200%;
-        opacity: 0.35;
-      }
-      #home > div:first-child > div:first-child {
-        width: 100%;
-        left: 0;
-        background: linear-gradient(to bottom,
-          #0D0D0D 0%,
-          rgba(13,13,13,0.6) 30%,
-          rgba(13,13,13,0.6) 70%,
-          #0D0D0D 100%
-        );
-      }
-    }
-  </style>
+    <!-- HERO STATS — maintenant DANS le z-index:3 -->
+    <div class="hero-stats fade-up visible" style="transition-delay:.4s">
+      <div>
+        <div class="stat-num">
+          <span class="counter" data-target="100" data-duration="2200">0</span><span>+</span>
+        </div>
+        <div class="stat-label">Projets livrés</div>
+      </div>
+      <div>
+        <div class="stat-num">
+          <span class="counter" data-target="3" data-duration="10000">0</span><span>+</span>
+        </div>
+        <div class="stat-label">Années d'expérience</div>
+      </div>
+      <div>
+        <div class="stat-num">
+          <span class="counter" data-target="10" data-duration="5000">0</span><span>+</span>
+        </div>
+        <div class="stat-label">Clients satisfaits</div>
+      </div>
+    </div>
+
+  </div>
 </section>
+
+<!-- COUNTER SCRIPT -->
+<script>
+const counters = document.querySelectorAll(".counter");
+counters.forEach(counter => {
+  const target = +counter.getAttribute("data-target");
+  const duration = +counter.getAttribute("data-duration");
+  let start = 0;
+  const increment = target / (duration / 26);
+  const updateCounter = () => {
+    start += increment;
+    if(start < target){
+      counter.innerText = Math.ceil(start);
+      requestAnimationFrame(updateCounter);
+    } else {
+      counter.innerText = target;
+    }
+  };
+  updateCounter();
+});
+</script>
+
+<!-- RESPONSIVE -->
+<style>
+  @media (max-width: 1024px) {
+    #home > div:first-child { width: 70%; opacity: 0.5; }
+  }
+  @media (max-width: 768px) {
+    #home > div:first-child { width: 100%; height: 100%; top: 0; right: 0; opacity: 1; }
+    #home > div:first-child iframe { width: 200%; height: 200%; opacity: 0.35; }
+  }
+</style>
 
 <!-- ABOUT -->
 <section class="about" id="about">
