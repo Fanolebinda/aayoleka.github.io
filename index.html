@@ -281,7 +281,78 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
       <a class="btn-secondary" href="#contact">Me contacter</a>
     </div>
   </div>
-
+  <!-- HERO STATS -->
+  <div class="hero-stats fade-up visible" style="transition-delay:.4s">
+    <div>
+      <div class="stat-num">
+        <span 
+          class="counter" 
+          data-target="100"
+          data-duration="2200"
+        >0</span><span>+</span>
+      </div>
+      <div class="stat-label">Projets livrés</div>
+    </div>
+    <div>
+      <div class="stat-num">
+        <span 
+          class="counter" 
+          data-target="3"
+          data-duration="10000"
+        >0</span><span>+</span>
+      </div>
+      <div class="stat-label">Années d'expérience</div>
+    </div>
+    <div>
+      <div class="stat-num">
+        <span 
+          class="counter" 
+          data-target="10"
+          data-duration="5000"
+        >0</span><span>+</span>
+      </div>
+      <div class="stat-label">Clients satisfaits</div>
+    </div>
+    </div>
+  </section>
+  
+  <!-- COUNTER SCRIPT -->
+  <script>
+  
+  const counters = document.querySelectorAll(".counter");
+  
+  counters.forEach(counter => {
+  
+      const target = +counter.getAttribute("data-target");
+      const duration = +counter.getAttribute("data-duration");
+  
+      let start = 0;
+  
+      const increment = target / (duration / 26);
+  
+      const updateCounter = () => {
+  
+          start += increment;
+  
+          if(start < target){
+  
+              counter.innerText = Math.ceil(start);
+  
+              requestAnimationFrame(updateCounter);
+  
+          } else {
+  
+              counter.innerText = target;
+  
+          }
+  
+      };
+  
+      updateCounter();
+  
+  });
+  
+  </script>
   <!-- RESPONSIVE MOBILE -->
   <style>
     @media (max-width: 768px) {
@@ -297,78 +368,6 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
   </style>
 </section>
 
-<!-- HERO STATS -->
-<div class="hero-stats fade-up visible" style="transition-delay:.4s">
-  <div>
-    <div class="stat-num">
-      <span 
-        class="counter" 
-        data-target="100"
-        data-duration="2200"
-      >0</span><span>+</span>
-    </div>
-    <div class="stat-label">Projets livrés</div>
-  </div>
-  <div>
-    <div class="stat-num">
-      <span 
-        class="counter" 
-        data-target="3"
-        data-duration="10000"
-      >0</span><span>+</span>
-    </div>
-    <div class="stat-label">Années d'expérience</div>
-  </div>
-  <div>
-    <div class="stat-num">
-      <span 
-        class="counter" 
-        data-target="10"
-        data-duration="5000"
-      >0</span><span>+</span>
-    </div>
-    <div class="stat-label">Clients satisfaits</div>
-  </div>
-  </div>
-</section>
-
-<!-- COUNTER SCRIPT -->
-<script>
-
-const counters = document.querySelectorAll(".counter");
-
-counters.forEach(counter => {
-
-    const target = +counter.getAttribute("data-target");
-    const duration = +counter.getAttribute("data-duration");
-
-    let start = 0;
-
-    const increment = target / (duration / 26);
-
-    const updateCounter = () => {
-
-        start += increment;
-
-        if(start < target){
-
-            counter.innerText = Math.ceil(start);
-
-            requestAnimationFrame(updateCounter);
-
-        } else {
-
-            counter.innerText = target;
-
-        }
-
-    };
-
-    updateCounter();
-
-});
-
-</script>
 <!-- ABOUT -->
 <section class="about" id="about">
   <div class="about-inner">
