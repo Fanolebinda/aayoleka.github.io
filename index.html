@@ -210,30 +210,109 @@ footer{padding:2rem 4rem;border-top:1px solid rgba(237,237,237,0.05);display:fle
 </nav>
 
 <!-- HERO -->
-<section class="hero" id="home">
-  <div class="hero-bg-line"></div>
-  <div class="hero-dot hero-dot-1"></div>
-  <div class="hero-dot hero-dot-2"></div>
+<section class="hero" id="home" style="position:relative;overflow:hidden;">
 
-  <div class="hero-tag fade-up visible">
-    <span class="hero-tag-dot"></span>
-    Disponible pour de nouveaux projets
+  <!-- VIDÉO BACKGROUND DROITE -->
+  <div style="
+    position:absolute;
+    top:0;right:0;
+    width:55%;height:100%;
+    z-index:0;
+    pointer-events:none;
+  ">
+    <!-- Dégradé flou vers la gauche -->
+    <div style="
+      position:absolute;
+      top:0;left:0;
+      width:60%;height:100%;
+      background:linear-gradient(to right, #0D0D0D 0%, rgba(13,13,13,0.85) 40%, transparent 100%);
+      z-index:2;
+    "></div>
+    <!-- Dégradé flou vers le bas -->
+    <div style="
+      position:absolute;
+      bottom:0;left:0;right:0;
+      height:40%;
+      background:linear-gradient(to top, #0D0D0D 0%, transparent 100%);
+      z-index:2;
+    "></div>
+
+    <!-- La vidéo YouTube -->
+    <iframe
+      src="https://www.youtube.com/embed/KKEx9bUUy1A?autoplay=1&mute=1&loop=1&playlist=KKEx9bUUy1A&controls=0&rel=0&showinfo=0&modestbranding=1"
+      style="
+        position:absolute;
+        top:50%;left:50%;
+        transform:translate(-50%,-50%);
+        width:100%;height:100%;
+        border:none;
+        opacity:0.6;
+        filter:blur(1px);
+      "
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;"
+    ></iframe>
   </div>
 
-  <h1 class="fade-up visible" style="transition-delay:.1s">
-    Vous voulez des vidéos ?<br>
-    Pourquoi pas<br>
-    <span>des histoires ?</span><br>
-  </h1>
-  <p class="hero-sub fade-up visible" style="transition-delay:.2s">
-    Oui<br>
-    Raconter des histoires à travers les visuels
-  </p>
+  <!-- CONTENU TEXTE — au dessus de la vidéo -->
+  <div style="position:relative;z-index:3;">
 
-  <div class="hero-btns fade-up visible" style="transition-delay:.3s">
-    <a class="btn-primary" href="#portfolio">Voir mes projets ↓</a>
-    <a class="btn-secondary" href="#contact">Me contacter</a>
+    <div class="hero-bg-line"></div>
+    <div class="hero-dot hero-dot-1"></div>
+    <div class="hero-dot hero-dot-2"></div>
+
+    <div class="hero-tag fade-up visible">
+      <span class="hero-tag-dot"></span>
+      Disponible pour de nouveaux projets
+    </div>
+
+    <h1 class="fade-up visible" style="transition-delay:.1s">
+      Vous voulez des vidéos ?<br>
+      Pourquoi pas<br>
+      <span>des histoires ?</span>
+    </h1>
+
+    <p class="hero-sub fade-up visible" style="transition-delay:.2s">
+      Oui<br>
+      Raconter des histoires à travers les visuels
+    </p>
+
+    <div class="hero-btns fade-up visible" style="transition-delay:.3s">
+      <a class="btn-primary" href="#portfolio">Voir mes projets ↓</a>
+      <a class="btn-secondary" href="#contact">Me contacter</a>
+    </div>
+
+    <div class="hero-stats fade-up visible" style="transition-delay:.4s">
+      <div>
+        <div class="stat-num">100<span>+</span></div>
+        <div class="stat-label">Projets livrés</div>
+      </div>
+      <div>
+        <div class="stat-num">3<span>+</span></div>
+        <div class="stat-label">Années d'expérience</div>
+      </div>
+      <div>
+        <div class="stat-num">10<span>+</span></div>
+        <div class="stat-label">Clients satisfaits</div>
+      </div>
+    </div>
+
   </div>
+
+  <!-- RESPONSIVE MOBILE -->
+  <style>
+    @media (max-width: 768px) {
+      #home > div:first-child {
+        width: 100%;
+        opacity: 0.3;
+      }
+      #home > div:first-child > div:first-child {
+        width: 100%;
+        background: linear-gradient(to bottom, #0D0D0D 0%, rgba(13,13,13,0.5) 50%, #0D0D0D 100%);
+      }
+    }
+  </style>
+
+</section>
 
   <!-- HERO STATS -->
   <div class="hero-stats fade-up visible" style="transition-delay:.4s">
